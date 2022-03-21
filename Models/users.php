@@ -1,7 +1,7 @@
 <?php
 
     class User {
-        private $db;
+        private $conn;
         private $table_name = "users";
 
 
@@ -9,50 +9,76 @@
         public $firstname;
         public $lastname;
         public $email;
-        public $age;
-        public $phone;
-        public $joindate;
-        public $image;
         public $password;
+        
 
         public function __construct($db){
 
-            $this->db = $db;
+            $this->conn = $db;
 
         }
 
         public function register(){
+            
+            
+            $query = "INSERT INTO " . $this->table_name . " 
+                        SET 
+                            firstname = :firstname,
+                            lastname = :lastname,
+                            email = :email,
+                            password = :password";
 
-            // if user already exists to be added
-
-            // sanitize
-
+            $stmt = $this->conn->prepare($query);
+            
             $this->firstname=htmlspecialchars(strip_tags($this->firstname));
             $this->lastname=htmlspecialchars(strip_tags($this->lastname));
             $this->email=htmlspecialchars(strip_tags($this->email));
-            $this->age=htmlspecialchars(strip_tags($this->age));
-            $this->phone=htmlspecialchars(strip_tags($this->phone));
-            $this->joindate=htmlspecialchars(strip_tags($this->joindate));
-            $this->image=htmlspecialchars(strip_tags($this->image));
             $this->password=htmlspecialchars(strip_tags($this->password));
 
-            $query = "INSERT INTO 
-                        " . $this->table_name . " 
-                        SET firstname = '".$this->firstname."',
-                            lastname= '".$this->lastname."',
-                            email= '".$this->email."',
-                            age= '".$this->age."',
-                            phone= '".$this->phone."',
-                            joindate= '".$this->joindate."',
-                            image= '".$this->image."',
-                            password= '".$this->password."'";
+            $stmt->bindParam(':firstname', $this->firstname);
+            $stmt->bindParam(':lastname', $this->lastname);
+            $stmt->bindParam(':email', $this->email);
 
-            $this->db->query($query);
+            $password_hash = password_hash($this->password, PASSWORD_BCRYPT);
+            $stmt->bindParam(':password', $password_hash);
 
-            if($this->db->affected_rows > 0){
+            if ($stmt->execute()) {
+                return true;
+            }else {
+                return false;
+            }
+        }
+
+        function emailExists() {
+            
+            $query = "SELECT id, firstname, lastname, password
+                    FROM " . $this->table_name . "
+                    WHERE email = ?
+                    limit 0,1";
+            
+            $stmt = $this->conn->prepare($query);
+
+            $this->email = htmlspecialchars(strip_tags($this->email));
+
+            $stmt->bindParam(1, $this->email);
+
+            $stmt->execute();
+
+            $num = $stmt->rowCount();
+
+            if ($num > 0) {
+
+                $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                $this->id = $row['id'];
+                $this->firstname = $row['firstname'];
+                $this->lastname = $row['lastname'];
+                $this->password = $row['password'];
+
                 return true;
             }
-                return false;
+
+            return false;
         }
 
         public function login() {

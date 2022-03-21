@@ -13,34 +13,45 @@
     $db = $database->getConnection();
     $user = new User($db);
 
-    $user->email = isset($_GET['email']) ? $_GET['email'] : die();
-    $user->password = base64_encode(isset($_GET['password']) ? $_GET['password'] : die());
-    $record = $user->login();
-    $row = mysqli_num_rows($record);
+    $data = json_decode(file_get_contents("php://input"));
 
-    if ( $row > 0) {
+    $user->email = $data->email;
+    $email_exists = $user->emailExists();
 
-        $dataRow = $record->fetch_assoc();
-            if (($user->password == $dataRow['password'])) {
-            $user_arr = array (
-                'status' => true,
-                'message' => "Logged in",
-                'email' => $dataRow['firstname'],
-            );
-            }else {
-                $user_arr = array (
-                    'status' => false,
-                    'message' => "incorrect password",
-                    'email' => $dataRow['firstname'],
-                );
-            }
-        
+    include_once '../config/core.php';
+    include_once '../libs/php-jwt-main/src/BeforeValidException.php';
+    include_once '../libs/php-jwt-main/src/ExpiredException.php';
+    include_once '../libs/php-jwt-main/src/SignatureInvalidException.php';
+    include_once '../libs/php-jwt-main/src/JWT.php';
+    use \Firebase\JWT\JWT;
+
+    if ($email_exists && password_verify($data->password, $user->password)){
+
+        $token = array (
+            "iat" => $issued_at,
+            "exp" => $expiration_time,
+            "iss" => $issuer,
+            "data" => array (
+                "id" => $user->id,
+                "firstname" => $user->firstname,
+                "lastname" => $user->lastname,
+                "email" => $user->email,
+            )
+        );
+
         http_response_code(200);
-        print_r(json_encode($user_arr));
-    }
-    else{
-        http_response_code(404);
-        print_r(json_encode("User not found"));
+
+        $jwt = JWT::encode($token, $key, 'HS512');
+        echo json_encode(
+            array (
+                "message" => "Logged in successfully",
+                "jwt" => $jwt
+            )
+            );
+    }else {
+
+        http_response_code(400);
+        echo json_encode(array("message" => "Unable to login"));
     }
 
     

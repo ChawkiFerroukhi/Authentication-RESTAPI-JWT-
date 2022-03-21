@@ -13,26 +13,31 @@
     $db = $database->getConnection();
     $user = new User($db);
 
+    // Get posted data
+    $data = json_decode(file_get_contents("php://input"));
 
-    $user->firstname = $_POST['firstname'];
-    $user->lastname = $_POST['lastname'];
-    $user->email = $_POST['email'];
-    $user->age = $_POST['age'];
-    $user->phone = $_POST['phone'];
-    $user->joindate = date('Y-m-d H:i:s');
-    $user->image = $_POST['image'];
-    $user->password = base64_encode($_POST['password']);
+    $user->firstname = $data->firstname;
+    $user->lastname = $data->lastname;
+    $user->email = $data->email;
+    $user->password = $data->password;
 
-    if ($user->register()) {
-        $user_arr = array (
+    if (!empty($user->firstname) && 
+        !empty($user->email) &&
+        !empty($user->password) &&
+        $user->register()
+    ){
+        http_response_code(200);
+        echo json_encode(array(
             "status" => true,
-            "message" => "Registred Successfully",
-            "email" => $user->email,
-        );
+            "message" => "Registred successfully",
+            "email" => $user->email, 
+        ));
+
+    }else {
+
+        http_response_code(400);
+        echo json_encode(array("message" => "Unable to register"));
     }
-
-    print_r(json_encode($user_arr));
-
 
 
 ?>
