@@ -1,0 +1,4 @@
+
+###> symfony/framework-bundle ###
+/vendor/
+###< symfony/framework-bundle ###
