@@ -6,12 +6,12 @@
     header("Access-Control-Max-Age: 3600");
     header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
-    include_once 'config/core.php';
-    include_once 'libs/php-jwt-main/src/BeforeValidException.php';
-    include_once 'libs/php-jwt-main/src/ExpiredException.php';
-    include_once 'libs/php-jwt-main/src/SignatureInvalidException.php';
-    include_once 'libs/php-jwt-main/src/JWT.php';
-    include_once 'libs/php-jwt-main/src/Key.php';
+    include_once '../config/core.php';
+    include_once '../libs/php-jwt-main/src/BeforeValidException.php';
+    include_once '../libs/php-jwt-main/src/ExpiredException.php';
+    include_once '../libs/php-jwt-main/src/SignatureInvalidException.php';
+    include_once '../libs/php-jwt-main/src/JWT.php';
+    include_once '../libs/php-jwt-main/src/Key.php';
     use \Firebase\JWT\JWT;
     use \Firebase\JWT\Key;
 
