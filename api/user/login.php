@@ -1,6 +1,6 @@
 <?php 
 
-    header("Access-Control-Allow-Origin: *");
+    header("Access-Control-Allow-Origin: http://localhost:8080/AuthenticationRESTAPI/");
     header("Content-Type: application/json; charset=UTF-8");
     header("Access-Control-Allow-Methods: POST");
     header("Access-Control-Max-Age: 3600");
@@ -8,6 +8,12 @@
 
     include_once '../config/database.php';
     include_once '../Models/users.php';
+    include_once '../config/core.php';
+    include_once '../libs/php-jwt-main/src/BeforeValidException.php';
+    include_once '../libs/php-jwt-main/src/ExpiredException.php';
+    include_once '../libs/php-jwt-main/src/SignatureInvalidException.php';
+    include_once '../libs/php-jwt-main/src/JWT.php';
+    use \Firebase\JWT\JWT;
 
     $database = new Database();
     $db = $database->getConnection();
@@ -18,12 +24,8 @@
     $user->email = $data->email;
     $email_exists = $user->emailExists();
 
-    include_once '../config/core.php';
-    include_once '../libs/php-jwt-main/src/BeforeValidException.php';
-    include_once '../libs/php-jwt-main/src/ExpiredException.php';
-    include_once '../libs/php-jwt-main/src/SignatureInvalidException.php';
-    include_once '../libs/php-jwt-main/src/JWT.php';
-    use \Firebase\JWT\JWT;
+    
+    
 
     if ($email_exists && password_verify($data->password, $user->password)){
 
@@ -41,7 +43,7 @@
 
         http_response_code(200);
 
-        $jwt = JWT::encode($token, $key, 'HS512');
+        $jwt = JWT::encode($token, $key, 'HS256');
         echo json_encode(
             array (
                 "message" => "Logged in successfully",

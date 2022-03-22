@@ -8,6 +8,6 @@
     $key = "example_key";
     $issued_at = time();
     $expiration_time = $issued_at + (60 * 60); // valid for one hour
-    $issuer = "";
+    $issuer = "http://localhost:8080/AuthenticationRESTAPI/";
 
 ?>
